@@ -1,30 +1,34 @@
-//count production
- const int  = 2;
- int count;
- 
-  
-void setup() {
+//contador produção
+ const int Sinal = 2;
+ int contagem;
 
-   pinMode(Signal, OUTPUT);
-   digitalWrite(Signal, HIGH);
+void setup() {
+ 
+  pinMode(Sinal, OUTPUT);
+  digitalWrite(Sinal, HIGH);
    
-   Serial.begin(9600);
+  Serial.begin(9600);
 }
 
 void loop() {
+  
+    Count();
+    delay(10);
+  
+}
+void Count() {
 
-
-
-    if(digitalRead(Signal) == 0){
+  if(digitalRead(Sinal) == 0){
       contagem ++;
 
-      while(digitalRead(Signal) == 0){
-        Serial.print(count); 
+      while(digitalRead(Sinal) == 0){
+        Serial.print(contagem); 
         Serial.print("\n");
         delay(10); 
 
       } 
-
     }
 
 }
+
+
