@@ -35,6 +35,11 @@ void setup() {
   digitalWrite(Sinal, HIGH);
 
 }
+
+void Count();
+void Silo1();
+void Silo2();
+void Transmissao();
 ////////////////////////////////////////////////////////////////////////---LOOP
 void loop() {
 
@@ -60,6 +65,8 @@ void Count() {
     }
   }
 }
+
+void checagem();
 ////////////////////////////////////////////////////////////////////////---Transmissão
 void Transmissao() {
 
