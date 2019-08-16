@@ -5,8 +5,11 @@ RF24 radio(9, 10); // CE, CSN
 char Nivel_silo_1;
 char Nivel_silo_2;
 
-const byte address[6] = "00001";
-boolean button_state = 0;
+const byte address[][6] = {"00001", "00002"};
+boolean reset = 0;
+boolean alterado_1 = false;
+boolean alterado_2 = false;
+
 int check;
 
 //Sensor IR
@@ -18,51 +21,86 @@ const int Sensor_22 = 7; //PINO DIGITAL UTILIZADO PELO SENSOR 22
 const int Sensor_33 = 8; //PINO DIGITAL UTILIZADO PELO SENSOR 33
 
 //count production
-const int Sinal = 2;
-int contagem;
+const int Sinal_1 = 2;
+const int Sinal_2 = 3;
+int contagem_M1;
+int contagem_M2;
+
+
 int enviar;
 
 void setup() {
   //radio
   radio.begin();                  //Starting the Wireless communication
-  radio.openWritingPipe(address); //Setting the address where we will send the data
+
+  radio.openWritingPipe(address[0]);
+  radio.openReadingPipe(1, address[1]);   //Setting the address at which we will receive the data
+
   radio.setPALevel(RF24_PA_MIN);  //You can set it as minimum or maximum depending on the distance between the transmitter and receiver.
-  radio.stopListening();          //This sets the module as transmitter
+
+  //radio.startListening();
 
   Serial.begin(9600);
 
-  pinMode(Sinal, OUTPUT);
-  digitalWrite(Sinal, HIGH);
+  pinMode(Sinal_1, OUTPUT);
+  digitalWrite(Sinal_1, HIGH);
+
+  pinMode(Sinal_2, OUTPUT);
+  digitalWrite(Sinal_2, HIGH);
 
 }
 
-void Count();
-void Silo1();
-void Silo2();
+void Count_1();
+void Count_2();
+//void Silo1();
+//void Silo2();
 void Transmissao();
+void Resetar();
 ////////////////////////////////////////////////////////////////////////---LOOP
 void loop() {
+  radio.stopListening();          //para de ler informaçoes do outro pipe
 
-  Count();
-  Silo1();
-  Silo2();
+  Count_1();
+  Count_2();
+ // Resetar();
+  //Silo1();
+  //Silo2();
   Transmissao();
 
   delay(500);
 
 }
 ////////////////////////////////////////////////////////////////////////---Count
-void Count() {
+void Count_1() {
 
-  if (digitalRead(Sinal) == 0) {
-    contagem ++;
+  if (digitalRead(Sinal_1) == 0) { // verifica se o sinal de contagem do ciclo foi ativado
+    contagem_M1 ++;
 
-    while (digitalRead(Sinal) == 0) {
-      Serial.print(contagem);
-      Serial.print("\n");
+    while (digitalRead(Sinal_1) == 0) {
+      Serial.print("Coont M1: ");
+      Serial.println(contagem_M1);
+
       delay(10);
 
     }
+    alterado_1 = true;
+  }
+
+}
+
+void Count_2() {
+
+  if (digitalRead(Sinal_2) == 0) { // verifica se o sinal de contagem do ciclo foi ativado
+    contagem_M2 ++;
+
+    while (digitalRead(Sinal_2) == 0) {
+      Serial.print("Coont M2: ");
+      Serial.println(contagem_M2);
+
+      delay(10);
+
+    }
+    alterado_2 = true;
   }
 }
 
@@ -70,12 +108,44 @@ void checagem();
 ////////////////////////////////////////////////////////////////////////---Transmissão
 void Transmissao() {
 
-  check = radio.write(&contagem, sizeof(int));
-  checagem();
-  check = radio.write(&Nivel_silo_1, sizeof(char));
-  checagem();
-  check = radio.write(&Nivel_silo_1, sizeof(char));
-  checagem();
+  if (alterado_1 == true) {
+    Serial.print("entrou no if trasnmissao 1 : ");
+    check = radio.write(&contagem_M1, sizeof(int));
+    checagem();
+
+    alterado_1 = false;
+
+  }
+
+  if (alterado_2 == true) {
+    Serial.print("entrou no if trasnmissao 2 : ");
+    check = radio.write(&contagem_M2, sizeof(int));
+    checagem();
+
+    alterado_2 = false;
+
+  }
+
+}
+
+void Resetar() {
+
+  radio.startListening();
+
+  while (radio.available()) { //verifica se a conexão esta habilitada
+
+
+    Serial.println("dentro de reset");
+    radio.read(&reset, sizeof(int));
+    if (digitalRead(reset) == 0) {
+
+      Serial.print("Reset");
+      contagem_M1 = 0;
+      contagem_M2 = 0;
+
+    }
+  }
+  radio.stopListening();
 
 }
 ////////////////////////////////////////////////////////////////////////---Checagem
@@ -87,12 +157,12 @@ void checagem() {
     Serial.println("Enviado.");
   } else {
     Serial.println("Negado.");
-    while (check == 0) {
-      check = radio.write(&contagem, sizeof(int));
-      Serial.println("");
-      Serial.println("reenvio");
-      delay(100);
-    }
+    //    while (check == 0) {
+    //      check = radio.write(&contagem_M1, sizeof(int)); // tirar isso daqui
+    //      Serial.println("");
+    //      Serial.println("reenvio");
+    //      delay(100);
+    //    }
 
   }
   Serial.println("");
