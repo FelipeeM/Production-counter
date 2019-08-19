@@ -9,16 +9,16 @@ const byte address[][6] = {"00001", "00002"};
 boolean reset = 0;
 boolean alterado_1 = false;
 boolean alterado_2 = false;
-
+int sinal_Transmissao = 1 ;
 int check;
 
 //Sensor IR
-const int Sensor_1 = 3; //PINO DIGITAL UTILIZADO PELO SENSOR 1
-const int Sensor_2 = 4; //PINO DIGITAL UTILIZADO PELO SENSOR 2
-const int Sensor_3 = 5; //PINO DIGITAL UTILIZADO PELO SENSOR 3
-const int Sensor_11 = 6; //PINO DIGITAL UTILIZADO PELO SENSOR 11
-const int Sensor_22 = 7; //PINO DIGITAL UTILIZADO PELO SENSOR 22
-const int Sensor_33 = 8; //PINO DIGITAL UTILIZADO PELO SENSOR 33
+const int Sensor_1 = 20; //PINO DIGITAL UTILIZADO PELO SENSOR 1
+const int Sensor_2 = 21; //PINO DIGITAL UTILIZADO PELO SENSOR 2
+const int Sensor_3 = 22; //PINO DIGITAL UTILIZADO PELO SENSOR 3
+const int Sensor_11 = 23; //PINO DIGITAL UTILIZADO PELO SENSOR 11
+const int Sensor_22 = 24; //PINO DIGITAL UTILIZADO PELO SENSOR 22
+const int Sensor_33 = 25; //PINO DIGITAL UTILIZADO PELO SENSOR 33
 
 //count production
 const int Sinal_1 = 2;
@@ -62,12 +62,12 @@ void loop() {
 
   Count_1();
   Count_2();
- // Resetar();
+  //Resetar();
   //Silo1();
   //Silo2();
   Transmissao();
 
-  delay(500);
+  delay(10);
 
 }
 ////////////////////////////////////////////////////////////////////////---Count
@@ -100,7 +100,7 @@ void Count_2() {
       delay(10);
 
     }
-    alterado_2 = true;
+    alterado_1 = true;
   }
 }
 
@@ -108,24 +108,30 @@ void checagem();
 ////////////////////////////////////////////////////////////////////////---Transmissão
 void Transmissao() {
 
+  
+    //check = radio.write(&sinal_Transmissao, sizeof(int));
+   //checagem();
+
   if (alterado_1 == true) {
-    Serial.print("entrou no if trasnmissao 1 : ");
+    
+  
+      
     check = radio.write(&contagem_M1, sizeof(int));
     checagem();
-
-    alterado_1 = false;
-
-  }
-
-  if (alterado_2 == true) {
-    Serial.print("entrou no if trasnmissao 2 : ");
+    delay(10);
     check = radio.write(&contagem_M2, sizeof(int));
     checagem();
 
-    alterado_2 = false;
+    if (check == 0) {
+        
+       radio.begin();
+                
+    }
+    
+    alterado_1 = false;
 
+  
   }
-
 }
 
 void Resetar() {
