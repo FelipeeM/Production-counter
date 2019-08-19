@@ -18,22 +18,24 @@ void setup() {
   Serial.begin(9600);
  
   //radio
-  radio.begin();
+    radio.begin();
  
-  radio.openWritingPipe(address[1]);
-  radio.openReadingPipe(1, address[0]);   //Setting the address at which we will receive the data
+    radio.openWritingPipe(address[1]);
+    radio.openReadingPipe(1, address[0]);   //Setting the address at which we will receive the data
   
-  radio.setPALevel(RF24_PA_MIN);       //You can set this as minimum or maximum depending on the distance between the transmitter and receiver.
+    radio.setPALevel(RF24_PA_MIN);       //You can set this as minimum or maximum depending on the distance between the transmitter and receiver.
  
  //botoes
   pinMode(reset, OUTPUT);
   digitalWrite(reset, HIGH);
 
 }
-void Receber();
-void Resetar();
-void Maquina_1();
-void Maquina_2();
+//voids
+  void Receber();
+  void Resetar();
+  void Maquina_1();
+  void Maquina_2();
+
 
 void loop(){
 
@@ -57,23 +59,17 @@ void Receber() {
   while(radio.available()) { //verifica se a conexão esta habilitada
     //Serial.println("conexao ativa");
     radio.read(&contagem_M1, sizeof(int));
-    Serial.print("contagem_M1: ");
-    Serial.println(contagem_M1);
-
-    delay(100);
-
+ 
     radio.read(&contagem_M2, sizeof(int));
-    Serial.print("contagem_M2: ");
-    Serial.println(contagem_M2);
     
-    delay(100);
+    
   }
   
-  delay(50);
+  delay(10);
 
 }
 
-void Resetar(){
+void Resetar(){ //void imconpleto 
      // Serial.println(digitalRead(reset));
       if (digitalRead(reset) == 0){
 
@@ -130,4 +126,3 @@ void Maquina_2(){
     }
     
 }
-
