@@ -1,5 +1,7 @@
 #include <SPI.h>
 #include <RF24.h>
+
+#define radioID 1   //Informar "0" para um dispositivo e "1" para o outro dispositivo
 RF24 radio(9, 10); // CE, CSN
 
 char Nivel_silo_1;
@@ -25,7 +27,7 @@ const int Sinal_1 = 2;
 const int Sinal_2 = 3;
 int contagem_M1;
 int contagem_M2;
-
+boolean x = 0;
 
 int enviar;
 
@@ -33,19 +35,24 @@ void setup() {
   //radio
   radio.begin();                  //Starting the Wireless communication
 
-  radio.openWritingPipe(address[0]);
-  radio.openReadingPipe(1, address[1]);   //Setting the address at which we will receive the data
-
+  #if radioID == 0
+      radio.openWritingPipe(address[0]);
+      radio.openReadingPipe(1, address[1]);
+  #else
+      radio.openWritingPipe(address[1]);
+      radio.openReadingPipe(1, address[0]);
+  #endif
+  
   radio.setPALevel(RF24_PA_MIN);  //You can set it as minimum or maximum depending on the distance between the transmitter and receiver.
 
   //radio.startListening();
 
   Serial.begin(9600);
 
-  pinMode(Sinal_1, OUTPUT);
+  pinMode(Sinal_1,INPUT_PULLUP);
   digitalWrite(Sinal_1, HIGH);
 
-  pinMode(Sinal_2, OUTPUT);
+  pinMode(Sinal_2,INPUT_PULLUP);
   digitalWrite(Sinal_2, HIGH);
 
 }
@@ -62,11 +69,11 @@ void loop() {
 
   Count_1();
   Count_2();
-  //Resetar();
   //Silo1();
-  //Silo2();
   Transmissao();
-
+ 
+  Resetar();
+  
   delay(10);
 
 }
@@ -114,14 +121,16 @@ void Transmissao() {
 
   if (alterado_1 == true) {
     
-  
-      
+   //for(x = 0; x <= 2; x ++ ){
+    
     check = radio.write(&contagem_M1, sizeof(int));
     checagem();
-    delay(10);
+    
     check = radio.write(&contagem_M2, sizeof(int));
     checagem();
-
+    
+   
+   // }
     if (check == 0) {
         
        radio.begin();
@@ -130,28 +139,24 @@ void Transmissao() {
     
     alterado_1 = false;
 
-  
+     radio.flush_tx(); 
   }
 }
 
 void Resetar() {
 
-  radio.startListening();
-
-  while (radio.available()) { //verifica se a conexão esta habilitada
-
-
-    Serial.println("dentro de reset");
-    radio.read(&reset, sizeof(int));
-    if (digitalRead(reset) == 0) {
+    radio.startListening();
+    radio.read(&x, sizeof(boolean));
+ 
+    if (x == 1) {
 
       Serial.print("Reset");
       contagem_M1 = 0;
       contagem_M2 = 0;
 
     }
-  }
-  radio.stopListening();
+  
+
 
 }
 ////////////////////////////////////////////////////////////////////////---Checagem
