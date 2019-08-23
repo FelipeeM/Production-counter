@@ -86,7 +86,11 @@ void Count_1() {
     while (digitalRead(Sinal_1) == 0) {
       Serial.print("Coont M1: ");
       Serial.println(contagem_M1);
-
+        if (digitalRead(Sinal_2) == 0&& digitalRead(Sinal_1) == 0 && alterado_1 == false ){
+           contagem_M2 ++;
+          alterado_1 = true;
+          Serial.print("2");
+        }
       delay(10);
 
     }
@@ -96,6 +100,7 @@ void Count_1() {
 }
 
 void Count_2() {
+ 
 
   if (digitalRead(Sinal_2) == 0) { // verifica se o sinal de contagem do ciclo foi ativado
     contagem_M2 ++;
@@ -103,26 +108,29 @@ void Count_2() {
     while (digitalRead(Sinal_2) == 0) {
       Serial.print("Coont M2: ");
       Serial.println(contagem_M2);
+        if (digitalRead(Sinal_2) == 0&& digitalRead(Sinal_1) == 0 && alterado_2 == false ){
+         contagem_M1 ++;
+         alterado_2 = true;
+          Serial.print("1");
+        }
 
       delay(10);
 
     }
     alterado_1 = true;
   }
+  
+  
 }
 
 void checagem();
 ////////////////////////////////////////////////////////////////////////---Transmissão
 void Transmissao() {
 
-  
-    //check = radio.write(&sinal_Transmissao, sizeof(int));
-   //checagem();
 
   if (alterado_1 == true) {
     
-   //for(x = 0; x <= 2; x ++ ){
-    
+     
     check = radio.write(&contagem_M1, sizeof(int));
     checagem();
     
@@ -130,7 +138,6 @@ void Transmissao() {
     checagem();
     
    
-   // }
     if (check == 0) {
         
        radio.begin();
