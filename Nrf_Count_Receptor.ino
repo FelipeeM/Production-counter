@@ -12,11 +12,21 @@ RF24 radio(9, 10); // CE, CSN
 const byte address[][6] = {"00001","00002" };
 boolean button_state = 0;
 boolean x; 
+
+
+  struct Ciclos{
+ 
+    String cod = "Maq";
+    int contagem_M1;
+    int contagem_M2;
+};
+
+
+Ciclos teste;
+
 //Pinos
 
 const int reset = 3;
-int contagem_M1 = 0;
-int contagem_M2 = 0;
 int check_M1;
 int check_M2;
 int check;
@@ -57,7 +67,7 @@ void setup() {
        lcd.setBacklight(HIGH);
 
   
-    radio.setPALevel(RF24_PA_MIN);       //You can set this as minimum or maximum depending on the distance between the transmitter and receiver.
+    radio.setPALevel(RF24_PA_MIN); 
  
  //botoes
   pinMode(reset, OUTPUT);
@@ -93,10 +103,10 @@ void Receber() {
 
   while(radio.available()) { //verifica se a conexão esta habilitada
     Serial.println("conexao ativa");
-    radio.read(&contagem_M1, sizeof(int));
-      Serial.println(contagem_M1);
-    radio.read(&contagem_M2, sizeof(int));
-      Serial.println(contagem_M2); 
+    radio.read(&teste, sizeof(teste));
+//      Serial.println(teste.contagem_M1);
+//    radio.read(&teste.contagem_M2, sizeof(int));
+//      Serial.println(teste.contagem_M2); 
     radio.flush_rx();
     
   }
@@ -119,38 +129,38 @@ void Resetar(){
        
         
 
-        contagem_M1 = 0;
-        contagem_M2 = 0;
+        teste.contagem_M1 = 0;
+        teste.contagem_M2 = 0;
         check_M1 = 0;
         check_M2 = 0;
-         Serial.println(contagem_M1);
+         Serial.println(teste.contagem_M1);
          lcd.setCursor(0,0);  
          lcd.print("Maquina 1: "); 
-         lcd.println(contagem_M1);
+         lcd.println(teste.contagem_M1);
 
          lcd.setCursor(0,1);  
          lcd.print("Maquina 2: ");
-         lcd.println(contagem_M2);
+         lcd.println(teste.contagem_M2);
 }
 
 void Maquina_1(){
 
     
         
-   if (contagem_M1 > check_M1)
+   if (teste.contagem_M1 > check_M1)
     {
        
        lcd.setCursor(0,0);  
        lcd.print("Maquina 1: "); 
-       lcd.println(contagem_M1);
+       lcd.println(teste.contagem_M1);
        lcd.print("     ");
        Serial.println(" ");
        Serial.println("Maquina 1");
        Serial.print("Numero de ciclos: ");
-       Serial.println(contagem_M1);
+       Serial.println(teste.contagem_M1);
        Serial.println(" ");
 
-       check_M1 = contagem_M1; 
+       check_M1 = teste.contagem_M1; 
 
     }
     
@@ -160,19 +170,19 @@ void Maquina_2(){
 
          
         
-   if (contagem_M2 > check_M2)
+   if (teste.contagem_M2 > check_M2)
     {
        lcd.setCursor(0,1);  
        lcd.print("Maquina 2: ");
-       lcd.println(contagem_M2);
-       lcd.print("     ");
+       lcd.println(teste.contagem_M2);
+      // lcd.print("     ");
        Serial.println(" ");
        Serial.println("Maquina 2");
        Serial.print("Numero de ciclos: ");
-       Serial.println(contagem_M2);
+       Serial.println(teste.contagem_M2);
        Serial.println(" ");
 
-       check_M2 = contagem_M2; 
+       check_M2 = teste.contagem_M2; 
 
     }
     
@@ -186,12 +196,6 @@ void checagem() {
     Serial.println("Enviado.");
   } else {
     Serial.println("Negado.");
-    //    while (check == 0) {
-    //      check = radio.write(&contagem_M1, sizeof(int)); // tirar isso daqui
-    //      Serial.println("");
-    //      Serial.println("reenvio");
-    //      delay(100);
-    //    }
 
   }
   Serial.println("");
