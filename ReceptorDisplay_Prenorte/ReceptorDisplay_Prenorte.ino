@@ -1,11 +1,14 @@
-//#include <Arduino.h>
 #include <SPI.h>
 #include <RF24.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <UIPEthernet.h> 
+#include <Wire.h> //Built-in
+#include <RtcDS3231.h> //Library Manager
 
 #define radioID 0   //Informar "0" para um dispositivo e "1" para o outro dispositivo
+
+RtcDS3231<TwoWire> Rtc(Wire); 
 
 LiquidCrystal_I2C lcd(0x27,2,1,0,4,5,6,7,3, POSITIVE);
 EthernetServer server(80); //PORTA EM QUE A CONEXÃO SERÁ FEITA
@@ -16,30 +19,36 @@ boolean button_state = 0;
 boolean x; 
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; //ATRIBUIÇÃO DE ENDEREÇO MAC AO ENC28J60
-byte ip[] = { 192, 168, 0, 155 }; //COLOQUE UMA FAIXA DE IP DISPONÍVEL DO SEU ROTEADOR. EX: 192.168.1.110  **** ISSO VARIA, NO MEU CASO É: 192.168.0.175
+byte ip[] = { 192,168,0,112 };
 
+//-------------Inicio------------------Pack
+  struct pack {
 
-  struct Ciclos{
- 
-    String cod = "Maq";
-    int contagem_M1;
-    int contagem_M2;
+  boolean reset;
+  int contagem_M1;
+  int contagem_M2;
+  char silo_1[16] = "\0";
+  char silo_2[16] = "\0";
+
 };
 
-Ciclos teste;
-
+pack pack_envio;
+//--------------Fim-------------------Pack
 //Pinos
 
-const int reset = 3;
+const int reset_Pin = 3;
+char check_S1[16];
+char check_S2[16];
 int check_M1;
 int check_M2;
 int check;
 
-void setup() {
+void setup() //----------------------------------------------Setup
+{
   lcd.begin (16,2);
-  
-  server.begin(); 
+  Rtc.Begin();
   Ethernet.begin(mac, ip);
+  server.begin(); 
   
   Serial.begin(9600);
   //radio
@@ -54,65 +63,36 @@ void setup() {
     #endif
     
        
-       lcd.setCursor(4,0);  
-       lcd.print("PRENORTE");
-       lcd.setCursor(3,1);  
-       lcd.print("Sistem 1.0");
-       lcd.setBacklight(LOW);
-       delay(500);
-       lcd.setBacklight(HIGH); 
-       delay(500);
-       lcd.setBacklight(LOW);
-       delay(500);
-       lcd.setBacklight(HIGH);
-       delay(500);
-       lcd.setBacklight(LOW);
-       lcd.setCursor(3,0);  
-       lcd.print("Aguardando");
-       lcd.setCursor(1,1);
-       lcd.print("informacoes...");
-       delay(500);
-       lcd.setBacklight(HIGH);
-
-  
+    displayInicio();  
+    iniciarRelogio(); 
     radio.setPALevel(RF24_PA_MIN); 
 
      
  //botoes
-  pinMode(reset, OUTPUT);
-  digitalWrite(reset, HIGH);
+  pinMode(reset_Pin, OUTPUT);
+  digitalWrite(reset_Pin, HIGH);
 
 }
-//voids
-  void Receber();
-  void Resetar();
-  void Maquina_1();
-  void Maquina_2();
 
-
-void loop(){
-
- 
-  radio.startListening();              // ler informaçoes do outro pipe 
-  servidor();
+void loop()
+{
+  //Relogio();
+  servidor();  
+  print_Silos(); 
   Receber();
   Maquina_1();
   Maquina_2();
-  if (digitalRead(reset) == 0){
-  Resetar();
-  }
-  delay(200);
-
+  resetar();
 }
  
 
 
 void Receber() {
-
-
+  radio.startListening();              // ler informaçoes do outro pipe 
   while(radio.available()) { //verifica se a conexão esta habilitada
+    
     Serial.println("conexao ativa");
-    radio.read(&teste, sizeof(teste));
+    radio.read(&pack_envio, sizeof(pack_envio));
     radio.flush_rx(); 
   }
   
@@ -121,16 +101,20 @@ void Receber() {
 }
 
 
-void checagem() {
+String checagem(int check)
+{
 
   Serial.println("");
-  Serial.println("Verificação de envio: ");
+  Serial.print("Verificação de envio: ");
   if (check == 1) {
     Serial.println("Enviado.");
   } else {
     Serial.println("Negado.");
+    radio.begin();
 
   }
-  Serial.println("");
+
+//return 0;
+Serial.println("");
 
 }
